@@ -16,11 +16,11 @@ namespace NatGeoImgs
         public string ZhDesc { get; set; }
         public DateTime AddTime { get; set; } = DateTime.UtcNow;
 
-        public static async Task<List<NGImg>> Query(DateTime utcAddTime)
+        public static async Task<List<NGImg>> Query(int topNum)
         {
             using var connection = new SqliteConnection(CONN);
 
-            return await connection.QueryAsync<NGImg>($"SELECT * FROM {NAME} WHERE AddTime>@AddTime;", new { AddTime = utcAddTime }) as List<NGImg>;
+            return await connection.QueryAsync<NGImg>($"SELECT * FROM {NAME} ORDER BY AddTime DESC LIMIT @topNum;", new { topNum }) as List<NGImg>;
         }
 
         public static async Task<int> Add(NGImg img)

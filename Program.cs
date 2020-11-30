@@ -20,11 +20,12 @@ namespace NatGeoImgs
             _conf = Deserialize<Conf>(GetEnvValue("CONF"));
 
             await NGImg.InitDB();
-            List<NGImg> imgs = await NGImg.Query(DateTime.UtcNow.AddDays(-1));
+            List<NGImg> imgs = await NGImg.Query(20);
 
             using HttpClient client = new HttpClient();
             UnicodeEncoding enc = new UnicodeEncoding();
             Random rand = new Random();
+            int addNum = 0;
             string data = await client.GetStringAsync(_conf.Url);
             XElement xe = XElement.Parse(data);
             foreach (XElement xeItem in xe.Descendants("item"))
@@ -50,14 +51,17 @@ namespace NatGeoImgs
                         EnDesc = enDesc,
                         ZhDesc = zhDesc
                     };
-                    await NGImg.Add(img);
+                    addNum += await NGImg.Add(img);
                 }
 
                 cdataNode.Value += $"<br/>{img.ZhDesc}";
             }
 
             string xml = xe.ToString();
-            await File.WriteAllTextAsync("rss.xml", xml);
+            if (addNum > 0)
+            {
+                await File.WriteAllTextAsync("rss.xml", xml);
+            }
             Console.WriteLine(xml);
         }
 
